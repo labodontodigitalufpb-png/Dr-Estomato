@@ -2,6 +2,13 @@ const $ = (s, p = document) => p.querySelector(s);
 const $$ = (s, p = document) => [...p.querySelectorAll(s)];
 
 const PATIENT_SESSION_KEY = 'dr-estomato-patient-session-v2';
+const CLINICAL_GUIDELINE_URL = 'https://bvsms.saude.gov.br/bvs/publicacoes/diretriz_pratica_odontologica_aps_cancer.pdf';
+const CLINICAL_BOOK_REFERENCE = 'Bonan, Perez e Mélo. Diagnóstico diferencial de lesões bucais na clínica odontológica, 2014.';
+const UNESP_CEDOB = {
+  name: 'Ambulatório de Estomatologia (CEDOB) · ICT/UNESP',
+  address: 'Av. Eng. Francisco José Longo, 777 · Jardim São Dimas · São José dos Campos',
+  phone: '(12) 3947-9000'
+};
 const state = { patient: null, answers: [], step: 0, sound: true, currentCase: null, currentCaseId: null, currentCaseToken: null, coords: null, pollTimer: null, navigatorMessageCount: 0 };
 
 const questions = [
@@ -9,27 +16,13 @@ const questions = [
   { text: 'Há quanto tempo você percebeu isso?', chips: ['Hoje', 'De 2 a 7 dias', 'De 8 a 14 dias', 'Mais de 14 dias'] },
   { text: 'Você está com febre, inchaço no rosto ou pescoço, ou dificuldade para abrir a boca?', chips: ['Não', 'Febre e inchaço', 'Dificuldade para abrir a boca'] },
   { text: 'Está com dificuldade para respirar ou engolir, ou com sangramento que não para?', chips: ['Não', 'Dificuldade para respirar', 'Dificuldade para engolir', 'Sangramento não para'] },
+  { text: 'Qual destas opções mais se parece com a alteração?', chips: ['Ferida ou úlcera', 'Mancha ou placa branca/vermelha', 'Caroço, nódulo ou endurecimento', 'Bolha ou vesícula', 'Outra ou nenhuma'] },
+  { text: 'Em que região da boca está a alteração?', chips: ['Língua', 'Embaixo da língua', 'Lábio', 'Gengiva ou céu da boca', 'Outra região', 'Não se aplica'] },
+  { text: 'Ela está crescendo, não cicatriza, tem parte endurecida ou sangra facilmente?', chips: ['Não', 'Está crescendo', 'Não cicatriza', 'Está endurecida', 'Sangra facilmente', 'Não se aplica'] },
+  { text: 'Você fuma ou já fumou algum produto de tabaco?', chips: ['Nunca fumei', 'Fumo atualmente', 'Já fumei', 'Prefiro não informar'] },
+  { text: 'Com que frequência você consome bebidas alcoólicas?', chips: ['Não consumo', 'Ocasionalmente', 'Frequentemente', 'Prefiro não informar'] },
   { text: 'A dor impede você de dormir ou realizar suas atividades?', chips: ['Não sinto dor', 'Dor leve', 'Dor moderada', 'Sim, impede'] }
 ];
-
-const units = {
-  central: { ubs: ['UBS Resolve Centro 1', 'Av. Dr. João Guilhermino, 317 · Centro'], upa: ['UPA mais próxima', 'Confirme pelo telefone 156 antes de sair'] },
-  sul: { ubs: ['UBS Jardim Satélite', 'Av. Andrômeda, 1960 · Jardim Satélite'], upa: ['UPA Campo dos Alemães', 'R. João Batista do Nascimento, 359'] },
-  leste: { ubs: ['UBS Vila Industrial', 'R. Felício Savastano, 440 · Vila Industrial'], upa: ['UPA Novo Horizonte', 'Av. Tancredo Neves, 5120'] },
-  norte: { ubs: ['UBS Santana', 'Av. Rui Barbosa, 2455 · Santana'], upa: ['UPA Alto da Ponte', 'R. Alziro Lebrão, 76'] },
-  sudeste: { ubs: ['UBS Putim', 'R. Roberto Aparecido Cruz, 100 · Santo Onofre'], upa: ['UPA Putim', 'Av. João Rodolfo Castelli, 1035'] },
-  oeste: { ubs: ['UBS Jardim das Indústrias', 'R. Pirassununga, 130 · Jardim das Indústrias'], upa: ['UPA mais próxima', 'Confirme pelo telefone 156 antes de sair'] }
-};
-
-function regionFor(address = '') {
-  const a = address.toLowerCase();
-  if (/sat[eé]lite|bosque|morumbi|oriente|industrial|alem[aã]es|colonial|dom pedro|reunidas/.test(a)) return 'sul';
-  if (/santana|alto da ponte|telespark|buquirinha|são francisco/.test(a)) return 'norte';
-  if (/putim|granja|são judas|vila nair/.test(a)) return 'sudeste';
-  if (/novo horizonte|eug[eê]nio|galo branco|vista verde|tesouro|detroit|santa in[eê]s/.test(a)) return 'leste';
-  if (/indústrias|limoeiro|aquarius|urbanova/.test(a)) return 'oeste';
-  return 'central';
-}
 
 function esc(value = '') { const el = document.createElement('span'); el.textContent = String(value); return el.innerHTML; }
 function showScreen(id) { $$('.card-screen').forEach(el => el.classList.toggle('active', el.id === id)); }
@@ -38,15 +31,15 @@ let preferredVoice = null, currentAudio = null, speechRequest = 0;
 function selectNaturalMaleVoice() {
   if (!('speechSynthesis' in window)) return;
   const voices = speechSynthesis.getVoices(), pt = voices.filter(v => /^pt[-_]BR/i.test(v.lang));
-  const maleNames = /antonio|ant[oô]nio|ricardo|felipe|daniel|tiago|male|masculin/i;
-  preferredVoice = pt.find(v => maleNames.test(v.name)) || pt.find(v => /google|microsoft|premium|enhanced|natural/i.test(v.name)) || pt[0] || null;
+  const maleNames = /antonio|ant[oô]nio|ricardo|felipe|daniel|tiago|thiago|joaquim|jorge|paulo|miguel|rafael|marcelo|carlos|davi|male|masculin/i;
+  preferredVoice = pt.find(v => maleNames.test(v.name)) || null;
 }
 selectNaturalMaleVoice();
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = selectNaturalMaleVoice;
 function browserSpeak(text) {
-  if (!('speechSynthesis' in window)) return;
+  if (!('speechSynthesis' in window) || !preferredVoice) return false;
   speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'pt-BR';
-  if (preferredVoice) u.voice = preferredVoice; u.rate = .89; u.pitch = .86; u.volume = 1; speechSynthesis.speak(u);
+  u.voice = preferredVoice; u.rate = .89; u.pitch = .86; u.volume = 1; speechSynthesis.speak(u); return true;
 }
 async function speak(text) {
   if (!state.sound) return;
@@ -68,7 +61,18 @@ function addMessage(text, type = 'bot') {
   const p = document.createElement('p'); p.textContent = text;
   el.append(p); el.insertAdjacentHTML('beforeend', `<time>${now()}</time>`);
   $('#chatMessages').append(el); $('#chatMessages').scrollTop = $('#chatMessages').scrollHeight;
-  if (type === 'bot') speak(text);
+  if (type === 'bot' && state.sound && !browserSpeak(text)) speak(text);
+}
+
+function renderQuestionChips(question) {
+  $('#quickReplies').innerHTML = '';
+  question.chips.forEach(label => { const b = document.createElement('button'); b.textContent = label; b.onclick = () => submitAnswer(label); $('#quickReplies').append(b); });
+}
+
+function startDialogue(patient) {
+  const first = questions[0];
+  addMessage(`Olá, ${patient.name}. Eu sou o Dr. Estomato. Antes de você responder, preciso explicar: esta conversa não fornece diagnóstico. Ela ajuda a reconhecer sinais que precisam de avaliação presencial. ${first.text}`);
+  renderQuestionChips(first);
 }
 
 function askQuestion() {
@@ -78,22 +82,19 @@ function askQuestion() {
   $('#chatMessages').append(typing); $('#quickReplies').innerHTML = '';
   setTimeout(() => {
     typing.remove(); addMessage(q.text);
-    q.chips.forEach(label => { const b = document.createElement('button'); b.textContent = label; b.onclick = () => submitAnswer(label); $('#quickReplies').append(b); });
+    renderQuestionChips(q);
   }, 520);
 }
 
-async function askNextWithGemini(userText) {
+function askNextQuestion() {
   const q = questions[state.step];
   if (!q) return finishTriage();
   const typing = document.createElement('div'); typing.className = 'typing'; typing.innerHTML = '<i></i><i></i><i></i>';
   $('#chatMessages').append(typing); $('#quickReplies').innerHTML = ''; $('#chatMessages').scrollTop = $('#chatMessages').scrollHeight;
-  let reply = q.text;
-  try {
-    const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: userText, nextQuestion: q.text }) });
-    if (response.ok) { const data = await response.json(); if (data.reply) reply = data.reply; }
-  } catch { /* A pergunta local mantém o atendimento disponível. */ }
-  typing.remove(); addMessage(reply);
-  q.chips.forEach(label => { const b = document.createElement('button'); b.textContent = label; b.onclick = () => submitAnswer(label); $('#quickReplies').append(b); });
+  setTimeout(() => {
+    typing.remove(); addMessage(q.text);
+    renderQuestionChips(q);
+  }, 220);
 }
 
 function emergencySignal(text) { return /dificuldade.*(respirar|engolir)|n[aã]o consigo (respirar|engolir)|falta de ar|sangramento.*(não|nao).*para|febre.*incha|incha.*febre|trauma.*grave/i.test(text); }
@@ -101,27 +102,93 @@ function submitAnswer(text, source = 'text') {
   if (!text.trim()) return;
   addMessage(source === 'audio' ? `🎙 ${text.trim()}` : text.trim(), 'user'); state.answers.push(text.trim()); $('#quickReplies').innerHTML = ''; $('#messageInput').value = '';
   if (emergencySignal(text)) { setTimeout(finishTriage, 450); return; }
-  state.step += 1; setTimeout(() => askNextWithGemini(text.trim()), 250);
+  state.step += 1; setTimeout(askNextQuestion, 120);
 }
 
 function classify(answers) {
   const t = answers.join(' ').toLowerCase();
   const red = /dificuldade.*(respirar|engolir)|não consigo (respirar|engolir)|nao consigo (respirar|engolir)|falta de ar|sangramento.*(não|nao).*para|febre.*incha|incha.*febre|sim, impede|trauma.*grave|dor.*pulsátil|dor.*pulsatil/.test(t);
-  const yellow = /mais de 14 dias|ferida|úlcera|ulcera|mancha (branca|vermelha|escura)|caroço|caroco|nódulo|nodulo|prótese|protese|mobilidade/.test(t);
+  const yellow = /mais de 14 dias|não cicatriza|nao cicatriza|sangra facilmente|ferida|úlcera|ulcera|mancha (branca|vermelha|escura)|placa (branca|vermelha|escura)|caroço|caroco|nódulo|nodulo|endurecimento|endurecida|aumentando|crescendo|prótese|protese|mobilidade/.test(t);
   return red ? 'red' : yellow ? 'yellow' : 'green';
+}
+
+function diagnosticPossibilities(answers) {
+  const t = answers.join(' ').toLowerCase(), possibilities = [];
+  const add = value => { if (!possibilities.includes(value)) possibilities.push(value); };
+  if (/ferida|úlcera|ulcera|erosão|erosao/.test(t)) {
+    add('causas traumáticas ou reacionais');
+    add('processos infecciosos, inflamatórios ou imunologicamente mediados');
+  }
+  if (/mancha|placa|branca|vermelha/.test(t)) {
+    add('alterações reacionais ou inflamatórias da mucosa');
+    add('infecções da mucosa oral');
+  }
+  if (/caroço|caroco|nódulo|nodulo|endurec/.test(t)) {
+    add('lesões reacionais e alterações de glândulas salivares ou vasos');
+    add('neoplasias benignas ou malignas, que só o exame pode diferenciar');
+  }
+  if (/bolha|vesícula|vesicula/.test(t)) {
+    add('infecções virais, extravasamento de muco ou doenças imunologicamente mediadas');
+  }
+  const warning = /mais de 14 dias|não cicatriza|nao cicatriza|crescendo|endurecida|sangra facilmente|mancha|placa/.test(t);
+  if (warning) add('desordens orais potencialmente malignas ou câncer de boca, que precisam ser descartados presencialmente');
+  if (!possibilities.length) add('causas dentárias, traumáticas, inflamatórias ou infecciosas comuns');
+  return possibilities.slice(0, 6);
+}
+
+function riskFactorSummary(answers) {
+  const t = answers.join(' ').toLowerCase(), factors = [];
+  if (/fumo atualmente/.test(t)) factors.push('tabagismo atual');
+  else if (/já fumei|ja fumei/.test(t)) factors.push('tabagismo prévio');
+  if (/frequentemente/.test(t)) factors.push('consumo frequente de álcool');
+  else if (/ocasionalmente/.test(t)) factors.push('consumo ocasional de álcool');
+  if (!factors.length) return '';
+  return `Foi relatado ${factors.join(' e ')}. Esse histórico ajuda a definir a prioridade da avaliação, mas não confirma nenhuma doença.`;
 }
 
 const riskCopy = {
   red: { label: 'Atenção imediata', title: 'É importante buscar atendimento agora.', icon: '!', body: 'Os sinais relatados precisam ser avaliados presencialmente com urgência. Vá com calma à UPA mais próxima; se houver falta de ar intensa ou piora rápida, ligue 192.', action: 'Procure uma UPA agora', place: 'upa' },
-  yellow: { label: 'Avaliação prioritária', title: 'Agende uma avaliação em curto prazo.', icon: '◷', body: 'O que você relatou precisa ser examinado de perto por um cirurgião-dentista. Procure sua UBS de referência nos próximos dias; se necessário, a equipe fará o encaminhamento ao CEO.', action: 'Procure sua UBS em curto prazo', place: 'ubs' },
-  green: { label: 'Cuidado de rotina', title: 'Não parece haver risco imediato.', icon: '✓', body: 'Muitas alterações da boca são comuns e não trazem risco imediato. Ainda assim, apenas o exame presencial confirma; marque uma consulta de rotina na UBS do seu bairro.', action: 'Agende uma consulta de rotina', place: 'ubs' }
+  yellow: { label: 'Avaliação prioritária', title: 'Agende uma avaliação em curto prazo.', icon: '◷', body: 'O que você relatou precisa ser examinado de perto por um cirurgião-dentista. Procure a unidade de saúde mais próxima da sua casa ou confirme o acesso ao Ambulatório de Estomatologia do ICT/UNESP.', action: 'Busque avaliação na UBS mais próxima ou no Ambulatório de Estomatologia do ICT/UNESP', place: 'ubs' },
+  green: { label: 'Cuidado de rotina', title: 'Não parece haver risco imediato.', icon: '✓', body: 'Muitas alterações da boca são comuns e não trazem risco imediato. Ainda assim, apenas o exame presencial confirma; marque uma consulta de rotina na unidade de saúde mais próxima da sua casa.', action: 'Agende uma consulta na UBS mais próxima', place: 'ubs' }
 };
 
+function patientLocation(caseData) {
+  return [caseData.street, caseData.number, caseData.neighborhood, caseData.city].filter(Boolean).join(', ') || caseData.address || 'São José dos Campos';
+}
+
+function nearestCare(caseData, coords, place) {
+  const emergency = place === 'upa', type = emergency ? 'UPA 24 horas' : 'UBS';
+  const location = coords ? `${coords.latitude},${coords.longitude}` : patientLocation(caseData);
+  return {
+    name: emergency ? 'UPA mais próxima de você' : 'Unidade de saúde mais próxima da sua casa',
+    detail: coords ? 'Busca baseada na localização compartilhada' : `Busca próxima de ${caseData.neighborhood || caseData.city || 'sua residência'}`,
+    mapQuery: `${type} perto de ${location}`
+  };
+}
+
+function guidanceSpeech(caseData) {
+  const copy = riskCopy[caseData?.risk];
+  if (!copy) return '';
+  const greeting = caseData.name ? `Orientação para ${caseData.name}. ` : '';
+  const possibilities = (caseData.possibilities || []).slice(0, 3).join('; ');
+  const differential = possibilities ? `Isto não é um diagnóstico. No exame, o profissional precisará avaliar possibilidades como ${possibilities}. ` : 'Isto não é um diagnóstico. ';
+  return `${greeting}${copy.title} ${copy.body} ${differential}${caseData.riskFactors || ''} ${copy.action}. Leve documento com foto, Cartão SUS, se tiver, e comprovante de endereço. Não se automedique.`;
+}
+
+async function readGuidance() {
+  const button = $('#readGuidance'), text = guidanceSpeech(state.currentCase);
+  if (!button || !text) return;
+  state.sound = true;
+  const soundToggle = $('#soundToggle');
+  if (soundToggle) { soundToggle.classList.add('sound-on'); soundToggle.textContent = '◖))'; }
+  button.disabled = true; button.innerHTML = '<span aria-hidden="true">◌</span><span><strong>Preparando áudio…</strong><small>Aguarde um instante</small></span>';
+  await speak(text);
+  button.disabled = false; button.innerHTML = '<span aria-hidden="true">▶</span><span><strong>Ouvir orientação novamente</strong><small>Leitura em voz pelo Dr. Estomato</small></span>';
+}
+
 async function finishTriage() {
-  const risk = classify(state.answers), copy = riskCopy[risk], region = regionFor(state.patient.address);
-  const unit = state.coords ? [`${copy.place === 'upa' ? 'UPAs' : 'UBSs'} perto de você`, 'Use o mapa para comparar distância e rota'] : units[region][copy.place];
-  const mapQuery = state.coords ? `${copy.place === 'upa' ? 'UPA 24 horas' : 'UBS'} perto de ${state.coords.latitude},${state.coords.longitude}` : `${unit[0]} São José dos Campos`;
-  const caseData = { ...state.patient, risk, answers: state.answers, createdAt: new Date().toISOString(), status: 'Aguardando retorno', messages: [{ from: 'system', text: `Triagem concluída: ${copy.label}.`, sentAt: new Date().toISOString() }] };
+  const risk = classify(state.answers), copy = riskCopy[risk];
+  const caseData = { ...state.patient, risk, answers: state.answers, possibilities: diagnosticPossibilities(state.answers), riskFactors: riskFactorSummary(state.answers), createdAt: new Date().toISOString(), status: 'Aguardando retorno', messages: [{ from: 'system', text: `Triagem concluída: ${copy.label}. Não constitui diagnóstico.`, sentAt: new Date().toISOString() }] };
   try {
     const response = await fetch('/api/cases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(caseData) });
     const data = await response.json(); if (!response.ok) throw new Error(data.error);
@@ -131,24 +198,33 @@ async function finishTriage() {
     toast('Não foi possível salvar o atendimento. Tente novamente.');
     return;
   }
-  renderResult(state.currentCase, unit, mapQuery);
+  renderResult(state.currentCase, state.coords, true);
   startCasePolling();
 }
 
-function renderResult(caseData, suppliedUnit = null, suppliedMapQuery = null) {
-  const risk = caseData.risk, copy = riskCopy[risk], region = regionFor(caseData.address);
-  const unit = suppliedUnit || units[region][copy.place];
-  const mapQuery = suppliedMapQuery || `${unit[0]} São José dos Campos`;
+function renderResult(caseData, coords = null, autoSpeak = false) {
+  const risk = caseData.risk, copy = riskCopy[risk], care = nearestCare(caseData, coords, copy.place);
+  const unespOrigin = coords ? `${coords.latitude},${coords.longitude}` : patientLocation(caseData);
+  const unespRoute = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(unespOrigin)}&destination=${encodeURIComponent(UNESP_CEDOB.address)}`;
+  const unespCard = risk === 'yellow' ? `<div class="unit-card specialty-card"><span class="unit-pin">DE</span><div><strong>${UNESP_CEDOB.name}</strong><small>${UNESP_CEDOB.address} · Atendimento gratuito; confirme antes de sair</small></div><span class="unit-actions"><a href="${unespRoute}" target="_blank" rel="noreferrer">Traçar rota ↗</a><a href="tel:+551239479000">Ligar ${UNESP_CEDOB.phone}</a></span></div>` : '';
+  const possibilities = Array.isArray(caseData.possibilities) && caseData.possibilities.length ? caseData.possibilities : diagnosticPossibilities(caseData.answers || []);
+  const riskFactors = caseData.riskFactors || riskFactorSummary(caseData.answers || []);
+  const possibilityItems = possibilities.map(item => `<li>${esc(item)}</li>`).join('');
   $('#resultScreen').innerHTML = `
     <div class="result-top"><span class="risk-symbol ${risk}">${copy.icon}</span><span class="eyebrow">${copy.label}</span><h2>${copy.title}</h2><p>${copy.body}</p></div>
     <div class="action-card"><strong>Orientação para ${esc(state.patient.name)}</strong><p>${copy.action}. Leve documento com foto, Cartão SUS (se tiver) e comprovante de endereço. Não se automedique.</p></div>
-    <div class="unit-card"><span class="unit-pin">⌖</span><div><strong>${unit[0]}</strong><small>${unit[1]} · Confirme a referência antes de sair</small></div><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}" target="_blank" rel="noreferrer">Ver mapa ↗</a></div>
+    <section class="possibility-card"><strong>Possibilidades que precisam ser avaliadas</strong><p>Isso não é diagnóstico. Alterações parecidas podem ter causas diferentes; o cirurgião-dentista precisa examinar a boca para diferenciá-las.</p><ul>${possibilityItems}</ul>${riskFactors ? `<div class="risk-context"><strong>Histórico informado</strong><span>${esc(riskFactors)}</span></div>` : ''}</section>
+    <button id="readGuidance" class="guidance-audio-btn" type="button"><span aria-hidden="true">▶</span><span><strong>Ouvir orientação</strong><small>Leitura em voz pelo Dr. Estomato</small></span></button>
+    <aside class="clinical-source"><strong>Base clínica</strong><p>Os grupos acima seguem os diagramas por lesão fundamental do livro e os sinais de alerta da diretriz. Eles organizam possibilidades para avaliação profissional; não determinam doença. Conforme o exame, a conduta pode incluir biópsia ou encaminhamento.</p><a href="${CLINICAL_GUIDELINE_URL}" target="_blank" rel="noreferrer">Diretriz do Ministério da Saúde sobre diagnóstico do câncer de boca ↗</a><span>${CLINICAL_BOOK_REFERENCE}</span></aside>
+    <section class="referral-options"><strong class="referral-title">Onde buscar atendimento</strong><div class="unit-card"><span class="unit-pin">⌖</span><div><strong>${care.name}</strong><small>${care.detail} · Compare distância, horário e rota antes de sair</small></div><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(care.mapQuery)}" target="_blank" rel="noreferrer">Ver unidades ↗</a></div>${unespCard}</section>
     <div class="unit-card"><span class="unit-pin">☎</span><div><strong>Central 156</strong><small>Confirme a unidade de referência, endereço e horário antes de sair</small></div><a href="tel:156">Ligar</a></div>
     <section class="patient-followup"><div class="patient-followup-title"><span>◉</span><div><strong>Converse com a equipe</strong><small>As mensagens ficam disponíveis neste aparelho</small></div></div><button id="enableNotifications" class="notification-btn" type="button">🔔 Ativar notificações no celular</button><p id="notificationHelp" class="notification-help">Autorize para receber um aviso quando o navegador responder.</p><div id="patientChatMessages" class="patient-chat-messages"></div><form id="patientChatForm" class="patient-chat-form"><input id="patientChatInput" placeholder="Escreva uma mensagem para o navegador…" required><button aria-label="Enviar mensagem">➤</button></form></section>
     <div class="result-actions"><button class="secondary-btn" onclick="window.print()">Salvar orientação</button><button class="primary-btn" onclick="restart()">Nova triagem</button></div>`;
   showScreen('resultScreen'); renderPatientChat();
+  $('#readGuidance').onclick = readGuidance;
   $('#enableNotifications').onclick = enableNotifications;
   updateNotificationButton();
+  if (state.sound && autoSpeak) setTimeout(readGuidance, 350);
 }
 
 function renderPatientChat() {
@@ -241,7 +317,7 @@ $('#intakeForm').addEventListener('submit', e => {
   e.preventDefault(); const data = Object.fromEntries(new FormData(e.currentTarget));
   data.address = `${data.street}, ${data.number}${data.apartment ? `, ${data.apartment}` : ''} · ${data.neighborhood} · ${data.city}`;
   state.patient = data; state.answers = []; state.step = 0;
-  showScreen('chatScreen'); addMessage(`Olá, ${data.name}. Eu sou o Dr. Estomato. Vou ouvir você e ajudar a entender qual cuidado procurar. Minha orientação não substitui a avaliação presencial.`); setTimeout(askQuestion, 500);
+  showScreen('chatScreen'); startDialogue(data);
 });
 $('#chatForm').addEventListener('submit', e => { e.preventDefault(); submitAnswer($('#messageInput').value); });
 $('#backToIntake').onclick = () => showScreen('intakeScreen');
@@ -258,11 +334,48 @@ $('#geoBtn').onclick = () => {
 $('#soundToggle').onclick = e => { state.sound = !state.sound; e.currentTarget.classList.toggle('sound-on', state.sound); e.currentTarget.textContent = state.sound ? '◖))' : '◖×'; if (!state.sound) { speechRequest++; speechSynthesis?.cancel(); currentAudio?.pause(); } toast(state.sound ? 'Leitura em voz ativada' : 'Leitura em voz desativada'); };
 
 let mediaRecorder = null, mediaStream = null, audioChunks = [], recordedBlob = null, recordingTimer = null, recordingSeconds = 0, previewUrl = null;
+let speechRecognition = null, directTranscript = '';
 function formatDuration(seconds) { return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`; }
 function clearRecording() {
   if (previewUrl) URL.revokeObjectURL(previewUrl); previewUrl = null; recordedBlob = null; audioChunks = [];
   $('#recordingPanel').hidden = true; $('#recordingPanel').classList.remove('recording'); $('#recordingPreview').removeAttribute('src');
 }
+function resetVoiceButton() { $('#voiceBtn').classList.remove('listening'); $('#voiceBtn').disabled = false; $('#voiceBtn').setAttribute('aria-label', 'Falar resposta'); }
+
+function startDirectSpeechInput() {
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) return startRecording();
+  clearRecording(); directTranscript = ''; speechRecognition = new Recognition(); speechRecognition.lang = 'pt-BR'; speechRecognition.interimResults = true; speechRecognition.continuous = false;
+  $('#recordingPanel').hidden = false; $('#recordingPanel').classList.add('recording'); $('#recordingLabel').textContent = 'Ouvindo… fale sua resposta'; $('#recordingTime').textContent = 'Envio automático'; $('#recordingPreview').hidden = true; $('.recording-actions').hidden = true; $('#voiceBtn').classList.add('listening'); $('#voiceBtn').setAttribute('aria-label', 'Parar e enviar fala');
+  speechRecognition.onresult = event => {
+    const parts = [];
+    for (let i = 0; i < event.results.length; i++) parts.push(event.results[i][0].transcript);
+    directTranscript = parts.join(' ').trim();
+    if (directTranscript) $('#recordingLabel').textContent = directTranscript;
+  };
+  speechRecognition.onerror = event => {
+    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') toast('Autorize o microfone para responder por voz.');
+    else if (event.error !== 'no-speech' && event.error !== 'aborted') toast('Não foi possível reconhecer a fala. Tente novamente.');
+  };
+  speechRecognition.onend = () => {
+    speechRecognition = null; resetVoiceButton(); clearRecording();
+    if (directTranscript) submitAnswer(directTranscript, 'audio');
+    else toast('Nenhuma fala foi identificada. Toque no microfone e tente novamente.');
+  };
+  try { speechRecognition.start(); } catch { speechRecognition = null; resetVoiceButton(); clearRecording(); startRecording(); }
+}
+
+async function transcribeAndSubmit(blob) {
+  if (!blob) return;
+  $('#recordingPanel').hidden = false; $('#recordingPanel').classList.remove('recording'); $('#recordingLabel').textContent = 'Entendendo sua resposta…'; $('#recordingTime').textContent = 'Envio automático'; $('#voiceBtn').disabled = true;
+  try {
+    const dataUrl = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(blob); });
+    const response = await fetch('/api/transcribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ audio: dataUrl.split(',')[1], mimeType: blob.type }) });
+    const data = await response.json(); if (!response.ok || !data.transcript) throw new Error(data.error);
+    clearRecording(); resetVoiceButton(); submitAnswer(data.transcript, 'audio');
+  } catch { clearRecording(); resetVoiceButton(); toast('Não foi possível entender o áudio. Toque no microfone e tente novamente.'); }
+}
+
 async function startRecording() {
   if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return toast('Gravação de áudio não disponível neste navegador.');
   try {
@@ -274,23 +387,15 @@ async function startRecording() {
     mediaRecorder.ondataavailable = event => { if (event.data.size) audioChunks.push(event.data); };
     mediaRecorder.onstop = () => {
       clearInterval(recordingTimer); mediaStream?.getTracks().forEach(track => track.stop());
-      recordedBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' }); previewUrl = URL.createObjectURL(recordedBlob); $('#recordingPreview').src = previewUrl; $('#recordingPreview').hidden = false; $('.recording-actions').hidden = false; $('#recordingPanel').classList.remove('recording'); $('#recordingLabel').textContent = 'Áudio pronto para enviar'; $('#voiceBtn').classList.remove('listening'); $('#voiceBtn').setAttribute('aria-label', 'Iniciar gravação de áudio');
+      recordedBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' }); resetVoiceButton(); transcribeAndSubmit(recordedBlob);
     };
     mediaRecorder.start(); recordingTimer = setInterval(() => { recordingSeconds++; $('#recordingTime').textContent = formatDuration(recordingSeconds); if (recordingSeconds >= 45) stopRecording(); }, 1000);
   } catch { toast('Não foi possível acessar o microfone. Confira a permissão do navegador.'); }
 }
 function stopRecording() { if (mediaRecorder?.state === 'recording') mediaRecorder.stop(); }
-$('#voiceBtn').onclick = () => mediaRecorder?.state === 'recording' ? stopRecording() : startRecording();
+$('#voiceBtn').onclick = () => speechRecognition ? speechRecognition.stop() : mediaRecorder?.state === 'recording' ? stopRecording() : startDirectSpeechInput();
 $('#discardRecording').onclick = clearRecording;
-$('#sendRecording').onclick = async () => {
-  if (!recordedBlob) return; const button = $('#sendRecording'); button.disabled = true; button.textContent = 'Transcrevendo…';
-  try {
-    const dataUrl = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(recordedBlob); });
-    const response = await fetch('/api/transcribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ audio: dataUrl.split(',')[1], mimeType: recordedBlob.type }) });
-    const data = await response.json(); if (!response.ok || !data.transcript) throw new Error(data.error);
-    clearRecording(); submitAnswer(data.transcript, 'audio');
-  } catch { toast('Não foi possível entender o áudio. Você pode gravar novamente ou digitar.'); button.disabled = false; button.textContent = 'Enviar áudio ➤'; }
-};
+$('#sendRecording').onclick = () => transcribeAndSubmit(recordedBlob);
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 restorePatientCase();

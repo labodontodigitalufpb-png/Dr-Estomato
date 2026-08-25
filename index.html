@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260824-8" />
+  <link rel="stylesheet" href="styles.css?v=20260825-6" />
 </head>
 <body>
   <div class="app-shell">
@@ -42,6 +42,7 @@
               <span>i</span>
               <p><strong>Importante</strong>Este atendimento orienta, mas não substitui o exame presencial com um cirurgião-dentista.</p>
             </div>
+            <div class="guideline-link">Referências clínicas: <a href="https://bvsms.saude.gov.br/bvs/publicacoes/diretriz_pratica_odontologica_aps_cancer.pdf" target="_blank" rel="noreferrer">diretriz do Ministério da Saúde sobre câncer de boca <span aria-hidden="true">↗</span></a> e <cite>Diagnóstico diferencial de lesões bucais na clínica odontológica</cite> (Bonan, Perez e Mélo, 2014).</div>
           </section>
 
           <section class="conversation-card" aria-live="polite">
@@ -67,7 +68,7 @@
                   <label>Cidade<input name="city" autocomplete="address-level2" value="São José dos Campos" required /></label>
                 </div>
                 <button id="geoBtn" class="geo-btn" type="button">⌖ Usar minha localização atual</button>
-                <label class="consent"><input name="consent" type="checkbox" required /><span>Autorizo o uso destes dados para a triagem e o acompanhamento. Entendo que apenas o texto ou áudio necessário da conversa poderá ser processado pelo serviço de IA Gemini/Google; meus dados cadastrais não serão enviados à IA.</span></label>
+                <label class="consent"><input name="consent" type="checkbox" required /><span>Autorizo o uso destes dados para a triagem e o acompanhamento. Entendo que apenas o texto ou áudio necessário da conversa poderá ser processado pelo reconhecimento de voz do navegador e pelo serviço de IA Gemini/Google; meus dados cadastrais não serão enviados à IA.</span></label>
                 <button class="primary-btn" type="submit">Começar atendimento <span>→</span></button>
               </form>
             </div>
@@ -87,7 +88,7 @@
                 <div class="recording-actions"><button id="discardRecording" type="button">Descartar</button><button id="sendRecording" type="button">Enviar áudio ➤</button></div>
               </div>
               <form id="chatForm" class="chat-input">
-                <button id="voiceBtn" type="button" class="voice-btn" aria-label="Iniciar gravação de áudio">●</button>
+                <button id="voiceBtn" type="button" class="voice-btn" aria-label="Falar resposta">●</button>
                 <input id="messageInput" autocomplete="off" placeholder="Digite ou grave uma mensagem…" />
                 <button type="submit" class="send-btn" aria-label="Enviar mensagem">➤</button>
               </form>
@@ -114,10 +115,10 @@
           <figure><img src="assets/labodigit.jpg" alt="LABODIGIT, Laboratório de Odontologia Digital da UFPB" /><figcaption>LABODIGIT · UFPB</figcaption></figure>
         </div>
       </section>
-      <div class="footer-bottom"><span>Dr. Estomato · Projeto de apoio à triagem, não realiza diagnóstico.</span><a href="https://www.sjc.sp.gov.br/servicos/saude/unidades-basicas-de-saude-ubs/unidades-basicas-de-saude/" target="_blank" rel="noreferrer">Rede de saúde de SJC ↗</a></div>
+      <div class="footer-bottom"><span>Dr. Estomato · Projeto de apoio à triagem, não realiza diagnóstico.</span><span class="footer-links"><span>Bonan, Perez e Mélo · 2014</span><a href="https://bvsms.saude.gov.br/bvs/publicacoes/diretriz_pratica_odontologica_aps_cancer.pdf" target="_blank" rel="noreferrer">Diretriz clínica do Ministério da Saúde ↗</a><a href="https://www.sjc.sp.gov.br/servicos/saude/unidades-basicas-de-saude-ubs/unidades-basicas-de-saude/" target="_blank" rel="noreferrer">Rede de saúde de SJC ↗</a></span></div>
     </footer>
   </div>
   <div id="toast" class="toast" role="status"></div>
-  <script src="app.js?v=20260824-8"></script>
+  <script src="app.js?v=20260825-6"></script>
 </body>
 </html>

@@ -9,7 +9,7 @@ from pathlib import Path
 
 HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8080"))
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.7-flash")
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
 API_URL = "https://generativelanguage.googleapis.com/v1beta/interactions"
 APP_DIR = Path(__file__).resolve().parent
 DATA_DIR = Path(os.environ.get("DR_ESTOMATO_DATA_DIR", APP_DIR / ".data"))
@@ -57,12 +57,16 @@ def store_case(case_data, patient_token_hash=None):
 
 
 def safe_case(incoming):
-    allowed = {"name", "age", "sex", "phone", "street", "number", "apartment", "neighborhood", "city", "address", "risk", "answers", "createdAt", "status", "messages"}
+    allowed = {"name", "age", "sex", "phone", "street", "number", "apartment", "neighborhood", "city", "address", "risk", "answers", "possibilities", "riskFactors", "createdAt", "status", "messages"}
     data = {key: incoming[key] for key in allowed if key in incoming}
     for key in ("name", "age", "sex", "phone", "street", "number", "apartment", "neighborhood", "city", "address", "risk", "status"):
         data[key] = str(data.get(key, ""))[:500]
     data["risk"] = data["risk"] if data["risk"] in {"red", "yellow", "green"} else "green"
-    data["answers"] = [str(item)[:1500] for item in data.get("answers", [])[:10]]
+    answers = data.get("answers", [])
+    possibilities = data.get("possibilities", [])
+    data["answers"] = [str(item)[:1500] for item in answers[:10]] if isinstance(answers, list) else []
+    data["possibilities"] = [str(item)[:500] for item in possibilities[:6]] if isinstance(possibilities, list) else []
+    data["riskFactors"] = str(data.get("riskFactors", ""))[:1000]
     data["messages"] = [m for m in data.get("messages", []) if isinstance(m, dict)][:1000]
     data["createdAt"] = str(data.get("createdAt") or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     data["status"] = data["status"] or "Aguardando retorno"
