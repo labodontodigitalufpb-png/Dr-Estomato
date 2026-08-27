@@ -28,18 +28,26 @@ function esc(value = '') { const el = document.createElement('span'); el.textCon
 function showScreen(id) { $$('.card-screen').forEach(el => el.classList.toggle('active', el.id === id)); }
 function now() { return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
 let preferredVoice = null, currentAudio = null, speechRequest = 0;
-function selectNaturalMaleVoice() {
+function selectPreferredVoice() {
   if (!('speechSynthesis' in window)) return;
-  const voices = speechSynthesis.getVoices(), pt = voices.filter(v => /^pt[-_]BR/i.test(v.lang));
+  const voices = speechSynthesis.getVoices();
+  const ptBR = voices.filter(v => /^pt[-_]BR/i.test(v.lang));
   const maleNames = /antonio|ant[oô]nio|ricardo|felipe|daniel|tiago|thiago|joaquim|jorge|paulo|miguel|rafael|marcelo|carlos|davi|male|masculin/i;
-  preferredVoice = pt.find(v => maleNames.test(v.name)) || null;
+  preferredVoice = ptBR.find(v => maleNames.test(v.name)) || ptBR.find(v => v.default) || ptBR[0] || null;
 }
-selectNaturalMaleVoice();
-if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = selectNaturalMaleVoice;
+selectPreferredVoice();
+if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = selectPreferredVoice;
 function browserSpeak(text) {
-  if (!('speechSynthesis' in window) || !preferredVoice) return false;
+  if (!('speechSynthesis' in window) || !text) return false;
+  if (!preferredVoice) selectPreferredVoice();
+  if (!preferredVoice) return false;
   speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'pt-BR';
-  u.voice = preferredVoice; u.rate = .89; u.pitch = .86; u.volume = 1; speechSynthesis.speak(u); return true;
+  u.voice = preferredVoice;
+  u.rate = .89; u.pitch = .92; u.volume = 1;
+  u.onerror = () => { if (state.sound) toast('A leitura em voz está bloqueada. Verifique o volume e a permissão de áudio do navegador.'); };
+  speechSynthesis.speak(u);
+  speechSynthesis.resume();
+  return true;
 }
 async function speak(text) {
   if (!state.sound) return;
@@ -53,7 +61,7 @@ async function speak(text) {
     currentAudio = new Audio(`data:${data.mimeType};base64,${data.audio}`); await currentAudio.play();
   } catch { if (requestId === speechRequest && state.sound) browserSpeak(text); }
 }
-function toast(text) { const el = $('#toast'); el.textContent = text; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2600); }
+function toast(text, duration = 2600) { const el = $('#toast'); el.textContent = text; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), duration); }
 function messageTime(date = new Date()) { return new Date(date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
 
 function addMessage(text, type = 'bot') {
@@ -61,7 +69,7 @@ function addMessage(text, type = 'bot') {
   const p = document.createElement('p'); p.textContent = text;
   el.append(p); el.insertAdjacentHTML('beforeend', `<time>${now()}</time>`);
   $('#chatMessages').append(el); $('#chatMessages').scrollTop = $('#chatMessages').scrollHeight;
-  if (type === 'bot' && state.sound && !browserSpeak(text)) speak(text);
+  if (type === 'bot' && state.sound) speak(text);
 }
 
 function renderQuestionChips(question) {
@@ -195,14 +203,17 @@ async function finishTriage() {
     state.currentCase = data.case; state.currentCaseId = data.case.id; state.currentCaseToken = data.patientToken;
     localStorage.setItem(PATIENT_SESSION_KEY, JSON.stringify({ id: state.currentCaseId, token: state.currentCaseToken }));
   } catch {
-    toast('Não foi possível salvar o atendimento. Tente novamente.');
+    state.currentCase = { ...caseData, id: `demo-${Date.now()}` };
+    state.currentCaseId = null; state.currentCaseToken = null;
+    renderResult(state.currentCase, state.coords, true, false);
+    toast('Modo demonstração: a orientação foi gerada, mas o atendimento não foi salvo.');
     return;
   }
-  renderResult(state.currentCase, state.coords, true);
+  renderResult(state.currentCase, state.coords, true, true);
   startCasePolling();
 }
 
-function renderResult(caseData, coords = null, autoSpeak = false) {
+function renderResult(caseData, coords = null, autoSpeak = false, serverConnected = Boolean(state.currentCaseId && state.currentCaseToken)) {
   const risk = caseData.risk, copy = riskCopy[risk], care = nearestCare(caseData, coords, copy.place);
   const unespOrigin = coords ? `${coords.latitude},${coords.longitude}` : patientLocation(caseData);
   const unespRoute = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(unespOrigin)}&destination=${encodeURIComponent(UNESP_CEDOB.address)}`;
@@ -210,6 +221,7 @@ function renderResult(caseData, coords = null, autoSpeak = false) {
   const possibilities = Array.isArray(caseData.possibilities) && caseData.possibilities.length ? caseData.possibilities : diagnosticPossibilities(caseData.answers || []);
   const riskFactors = caseData.riskFactors || riskFactorSummary(caseData.answers || []);
   const possibilityItems = possibilities.map(item => `<li>${esc(item)}</li>`).join('');
+  const followupSection = serverConnected ? `<section class="patient-followup"><div class="patient-followup-title"><span>◉</span><div><strong>Converse com a equipe</strong><small>As mensagens ficam disponíveis neste aparelho</small></div></div><button id="enableNotifications" class="notification-btn" type="button">🔔 Ativar notificações no celular</button><p id="notificationHelp" class="notification-help">Autorize para receber um aviso quando o navegador responder.</p><div id="patientChatMessages" class="patient-chat-messages"></div><form id="patientChatForm" class="patient-chat-form"><input id="patientChatInput" placeholder="Escreva uma mensagem para o navegador…" required><button aria-label="Enviar mensagem">➤</button></form></section>` : `<section class="patient-followup"><div class="patient-followup-title"><span>ⓘ</span><div><strong>Modo demonstração</strong><small>A orientação não foi enviada à equipe</small></div></div><p class="notification-help">O servidor de atendimento não está disponível. Você pode consultar e salvar esta orientação, mas mensagens e notificações estão desativadas.</p></section>`;
   $('#resultScreen').innerHTML = `
     <div class="result-top"><span class="risk-symbol ${risk}">${copy.icon}</span><span class="eyebrow">${copy.label}</span><h2>${copy.title}</h2><p>${copy.body}</p></div>
     <div class="action-card"><strong>Orientação para ${esc(state.patient.name)}</strong><p>${copy.action}. Leve documento com foto, Cartão SUS (se tiver) e comprovante de endereço. Não se automedique.</p></div>
@@ -218,12 +230,15 @@ function renderResult(caseData, coords = null, autoSpeak = false) {
     <aside class="clinical-source"><strong>Base clínica</strong><p>Os grupos acima seguem os diagramas por lesão fundamental do livro e os sinais de alerta da diretriz. Eles organizam possibilidades para avaliação profissional; não determinam doença. Conforme o exame, a conduta pode incluir biópsia ou encaminhamento.</p><a href="${CLINICAL_GUIDELINE_URL}" target="_blank" rel="noreferrer">Diretriz do Ministério da Saúde sobre diagnóstico do câncer de boca ↗</a><span>${CLINICAL_BOOK_REFERENCE}</span></aside>
     <section class="referral-options"><strong class="referral-title">Onde buscar atendimento</strong><div class="unit-card"><span class="unit-pin">⌖</span><div><strong>${care.name}</strong><small>${care.detail} · Compare distância, horário e rota antes de sair</small></div><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(care.mapQuery)}" target="_blank" rel="noreferrer">Ver unidades ↗</a></div>${unespCard}</section>
     <div class="unit-card"><span class="unit-pin">☎</span><div><strong>Central 156</strong><small>Confirme a unidade de referência, endereço e horário antes de sair</small></div><a href="tel:156">Ligar</a></div>
-    <section class="patient-followup"><div class="patient-followup-title"><span>◉</span><div><strong>Converse com a equipe</strong><small>As mensagens ficam disponíveis neste aparelho</small></div></div><button id="enableNotifications" class="notification-btn" type="button">🔔 Ativar notificações no celular</button><p id="notificationHelp" class="notification-help">Autorize para receber um aviso quando o navegador responder.</p><div id="patientChatMessages" class="patient-chat-messages"></div><form id="patientChatForm" class="patient-chat-form"><input id="patientChatInput" placeholder="Escreva uma mensagem para o navegador…" required><button aria-label="Enviar mensagem">➤</button></form></section>
+    ${followupSection}
     <div class="result-actions"><button class="secondary-btn" onclick="window.print()">Salvar orientação</button><button class="primary-btn" onclick="restart()">Nova triagem</button></div>`;
-  showScreen('resultScreen'); renderPatientChat();
+  showScreen('resultScreen');
+  if (serverConnected) renderPatientChat();
   $('#readGuidance').onclick = readGuidance;
-  $('#enableNotifications').onclick = enableNotifications;
-  updateNotificationButton();
+  if (serverConnected) {
+    $('#enableNotifications').onclick = enableNotifications;
+    updateNotificationButton();
+  }
   if (state.sound && autoSpeak) setTimeout(readGuidance, 350);
 }
 
@@ -334,7 +349,7 @@ $('#geoBtn').onclick = () => {
 $('#soundToggle').onclick = e => { state.sound = !state.sound; e.currentTarget.classList.toggle('sound-on', state.sound); e.currentTarget.textContent = state.sound ? '◖))' : '◖×'; if (!state.sound) { speechRequest++; speechSynthesis?.cancel(); currentAudio?.pause(); } toast(state.sound ? 'Leitura em voz ativada' : 'Leitura em voz desativada'); };
 
 let mediaRecorder = null, mediaStream = null, audioChunks = [], recordedBlob = null, recordingTimer = null, recordingSeconds = 0, previewUrl = null;
-let speechRecognition = null, directTranscript = '';
+let speechRecognition = null, directTranscript = '', speechRecognitionTimer = null;
 function formatDuration(seconds) { return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`; }
 function clearRecording() {
   if (previewUrl) URL.revokeObjectURL(previewUrl); previewUrl = null; recordedBlob = null; audioChunks = [];
@@ -345,6 +360,7 @@ function resetVoiceButton() { $('#voiceBtn').classList.remove('listening'); $('#
 function startDirectSpeechInput() {
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!Recognition) return startRecording();
+  let timedOut = false;
   clearRecording(); directTranscript = ''; speechRecognition = new Recognition(); speechRecognition.lang = 'pt-BR'; speechRecognition.interimResults = true; speechRecognition.continuous = false;
   $('#recordingPanel').hidden = false; $('#recordingPanel').classList.add('recording'); $('#recordingLabel').textContent = 'Ouvindo… fale sua resposta'; $('#recordingTime').textContent = 'Envio automático'; $('#recordingPreview').hidden = true; $('.recording-actions').hidden = true; $('#voiceBtn').classList.add('listening'); $('#voiceBtn').setAttribute('aria-label', 'Parar e enviar fala');
   speechRecognition.onresult = event => {
@@ -354,15 +370,27 @@ function startDirectSpeechInput() {
     if (directTranscript) $('#recordingLabel').textContent = directTranscript;
   };
   speechRecognition.onerror = event => {
-    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') toast('Autorize o microfone para responder por voz.');
+    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') toast('Microfone bloqueado. No navegador, abra as permissões deste site e selecione Microfone: Permitir.', 6500);
     else if (event.error !== 'no-speech' && event.error !== 'aborted') toast('Não foi possível reconhecer a fala. Tente novamente.');
   };
   speechRecognition.onend = () => {
+    clearTimeout(speechRecognitionTimer); speechRecognitionTimer = null;
     speechRecognition = null; resetVoiceButton(); clearRecording();
     if (directTranscript) submitAnswer(directTranscript, 'audio');
-    else toast('Nenhuma fala foi identificada. Toque no microfone e tente novamente.');
+    else if (!timedOut) toast('Nenhuma fala foi identificada. Toque no microfone e tente novamente.');
   };
-  try { speechRecognition.start(); } catch { speechRecognition = null; resetVoiceButton(); clearRecording(); startRecording(); }
+  try {
+    speechRecognition.start();
+    speechRecognitionTimer = setTimeout(() => {
+      if (!speechRecognition) return;
+      timedOut = true;
+      toast('O tempo de escuta terminou. Fale após tocar no microfone ou responda por texto.');
+      speechRecognition.stop();
+    }, 15000);
+  } catch {
+    clearTimeout(speechRecognitionTimer); speechRecognitionTimer = null;
+    speechRecognition = null; resetVoiceButton(); clearRecording(); startRecording();
+  }
 }
 
 async function transcribeAndSubmit(blob) {
@@ -371,9 +399,13 @@ async function transcribeAndSubmit(blob) {
   try {
     const dataUrl = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(blob); });
     const response = await fetch('/api/transcribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ audio: dataUrl.split(',')[1], mimeType: blob.type }) });
-    const data = await response.json(); if (!response.ok || !data.transcript) throw new Error(data.error);
+    if (!response.ok) throw new Error(response.status === 404 ? 'server-unavailable' : 'transcription-failed');
+    const data = await response.json(); if (!data.transcript) throw new Error('transcription-failed');
     clearRecording(); resetVoiceButton(); submitAnswer(data.transcript, 'audio');
-  } catch { clearRecording(); resetVoiceButton(); toast('Não foi possível entender o áudio. Toque no microfone e tente novamente.'); }
+  } catch (error) {
+    clearRecording(); resetVoiceButton();
+    toast(error?.message === 'server-unavailable' ? 'A transcrição por voz precisa do servidor. Por enquanto, responda por texto.' : 'Não foi possível entender o áudio. Toque no microfone e tente novamente.');
+  }
 }
 
 async function startRecording() {
@@ -390,10 +422,31 @@ async function startRecording() {
       recordedBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' }); resetVoiceButton(); transcribeAndSubmit(recordedBlob);
     };
     mediaRecorder.start(); recordingTimer = setInterval(() => { recordingSeconds++; $('#recordingTime').textContent = formatDuration(recordingSeconds); if (recordingSeconds >= 45) stopRecording(); }, 1000);
-  } catch { toast('Não foi possível acessar o microfone. Confira a permissão do navegador.'); }
+  } catch (error) {
+    const blocked = error?.name === 'NotAllowedError' || error?.name === 'SecurityError';
+    toast(blocked ? 'O microfone está bloqueado. Autorize-o nas configurações do site e use HTTPS.' : 'Não foi possível acessar o microfone neste aparelho.');
+  }
 }
 function stopRecording() { if (mediaRecorder?.state === 'recording') mediaRecorder.stop(); }
-$('#voiceBtn').onclick = () => speechRecognition ? speechRecognition.stop() : mediaRecorder?.state === 'recording' ? stopRecording() : startDirectSpeechInput();
+async function beginVoiceInput() {
+  if (!window.isSecureContext) return toast('O microfone exige uma conexão segura. Abra o aplicativo por http://127.0.0.1:8080 ou HTTPS.', 6500);
+  if (!navigator.mediaDevices?.getUserMedia) return toast('Este navegador não disponibiliza acesso ao microfone. Tente uma versão atual do Chrome, Edge ou Safari.', 6500);
+  let permissionStream = null;
+  try {
+    permissionStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    permissionStream.getTracks().forEach(track => track.stop());
+    startDirectSpeechInput();
+  } catch (error) {
+    const blocked = error?.name === 'NotAllowedError' || error?.name === 'SecurityError';
+    const missing = error?.name === 'NotFoundError' || error?.name === 'DevicesNotFoundError';
+    if (blocked) toast('Microfone bloqueado. Clique no cadeado ao lado do endereço e escolha Microfone: Permitir. No macOS, confira também Privacidade e Segurança › Microfone.', 8000);
+    else if (missing) toast('Nenhum microfone foi encontrado neste aparelho.', 6000);
+    else toast('Não foi possível iniciar o microfone. Feche outros aplicativos que estejam usando áudio e tente novamente.', 6500);
+  } finally {
+    permissionStream?.getTracks().forEach(track => track.stop());
+  }
+}
+$('#voiceBtn').onclick = () => speechRecognition ? speechRecognition.stop() : mediaRecorder?.state === 'recording' ? stopRecording() : beginVoiceInput();
 $('#discardRecording').onclick = clearRecording;
 $('#sendRecording').onclick = () => transcribeAndSubmit(recordedBlob);
 

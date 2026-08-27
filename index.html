@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260825-6" />
+  <link rel="stylesheet" href="styles.css?v=20260827-3" />
 </head>
 <body>
   <div class="app-shell">
@@ -34,6 +34,10 @@
             <div class="eyebrow"><span></span> Orientação segura e acolhedora</div>
             <h1>Vamos cuidar da sua<br><em>boca, juntos.</em></h1>
             <p>Conte o que está sentindo. Eu faço algumas perguntas simples e indico o cuidado mais adequado na rede de São José dos Campos.</p>
+            <figure class="doctor-showcase">
+              <img src="assets/dr-estomato-profissional.png" alt="Representação ilustrativa do assistente virtual Dr. Estomato em um consultório odontológico" />
+              <figcaption><span>Assistente virtual</span><strong>Dr. Estomato</strong><small>Representação ilustrativa para acolhimento e orientação em saúde bucal.</small></figcaption>
+            </figure>
             <div class="trust-row">
               <div class="trust-item"><span class="icon-circle">✓</span><span><strong>Uso responsável de dados</strong><small>Dados cadastrais não são enviados à IA</small></span></div>
               <div class="trust-item"><span class="icon-circle">⌁</span><span><strong>Orientação pelo SUS</strong><small>Encontre a unidade indicada</small></span></div>
@@ -48,7 +52,7 @@
           <section class="conversation-card" aria-live="polite">
             <div id="intakeScreen" class="card-screen active">
               <div class="card-heading">
-                <span class="assistant-avatar">DE<span class="online-dot"></span></span>
+                <span class="assistant-avatar"><img src="assets/dr-estomato-profissional.png" alt="" /><span class="online-dot"></span></span>
                 <div><h2>Antes de começarmos</h2><p>Preencha seus dados para personalizar o cuidado.</p></div>
               </div>
               <form id="intakeForm">
@@ -76,7 +80,7 @@
             <div id="chatScreen" class="card-screen chat-screen">
               <div class="chat-header">
                 <button id="backToIntake" class="icon-btn" aria-label="Voltar">←</button>
-                <span class="assistant-avatar small">DE<span class="online-dot"></span></span>
+                <span class="assistant-avatar small"><img src="assets/dr-estomato-profissional.png" alt="" /><span class="online-dot"></span></span>
                 <div><strong>Dr. Estomato</strong><small><span></span> Assistente virtual disponível</small></div>
                 <button id="soundToggle" class="icon-btn sound-on" aria-label="Ativar ou desativar áudio">◖))</button>
               </div>
@@ -119,6 +123,6 @@
     </footer>
   </div>
   <div id="toast" class="toast" role="status"></div>
-  <script src="app.js?v=20260825-6"></script>
+  <script src="app.js?v=20260827-5"></script>
 </body>
 </html>
