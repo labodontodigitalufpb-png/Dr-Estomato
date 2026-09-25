@@ -3,126 +3,202 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#f7f3eb" />
-  <meta name="description" content="Dr. Estomato — acolhimento e orientação em saúde bucal para São José dos Campos." />
+  <meta name="theme-color" content="#f5f5f7" />
+  <meta name="description" content="Acolhimento e orientação em saúde bucal para São José dos Campos." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="assets/icon-192.png" />
-  <title>Dr. Estomato · Saúde bucal perto de você</title>
+  <title>Dr. Estomato, saúde bucal perto de você</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260827-3" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260917-5" />
 </head>
 <body>
   <div class="app-shell">
-    <header class="topbar">
-      <a class="brand" href="#" aria-label="Página inicial Dr. Estomato">
-        <span class="brand-mark" aria-hidden="true"><img src="assets/dr-estomato.jpeg" alt="" /></span>
-        <span>Dr. Estomato<small>Triagem em doenças da boca</small></span>
-      </a>
-      <nav class="view-switch" aria-label="Área do aplicativo">
-        <button class="view-btn active" data-view="patient">Cidadão</button>
-        <a class="view-btn" href="admin.html" aria-label="Entrar na área do navegador">Navegador</a>
-      </nav>
-      <div class="sus-badge"><span>●</span> Rede SUS · SJC</div>
+    <header class="global-nav">
+      <div class="global-nav-inner">
+        <a class="global-brand" href="index.html"><img src="assets/dr-estomato.jpeg" alt="" /><span>Dr. Estomato</span></a>
+        <nav class="global-links" aria-label="Seções do site">
+          <a href="#atendimento">Atendimento</a>
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#base-clinica">Base clínica</a>
+          <a href="#instituicoes">Instituições</a>
+          <a href="tel:156">Central 156</a>
+          <a href="admin.html">Navegador</a>
+        </nav>
+        <span class="global-meta">Rede SUS de São José dos Campos</span>
+      </div>
     </header>
 
+    <div class="mini-nav">
+      <div class="mini-nav-inner">
+        <span class="mini-nav-title">Dr. Estomato <em>triagem</em></span>
+        <nav class="mini-nav-links" aria-label="Ações do atendimento">
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#base-clinica">Base clínica</a>
+          <a href="admin.html">Área do navegador</a>
+          <a class="pill pill-filled" href="#atendimento">Começar</a>
+        </nav>
+      </div>
+    </div>
+
     <main>
-      <section id="patientView" class="view active">
-        <div class="patient-layout">
-          <section class="hero-panel">
-            <div class="eyebrow"><span></span> Orientação segura e acolhedora</div>
-            <h1>Vamos cuidar da sua<br><em>boca, juntos.</em></h1>
-            <p>Conte o que está sentindo. Eu faço algumas perguntas simples e indico o cuidado mais adequado na rede de São José dos Campos.</p>
-            <figure class="doctor-showcase">
-              <img src="assets/dr-estomato-profissional.png" alt="Representação ilustrativa do assistente virtual Dr. Estomato em um consultório odontológico" />
-              <figcaption><span>Assistente virtual</span><strong>Dr. Estomato</strong><small>Representação ilustrativa para acolhimento e orientação em saúde bucal.</small></figcaption>
-            </figure>
-            <div class="trust-row">
-              <div class="trust-item"><span class="icon-circle">✓</span><span><strong>Uso responsável de dados</strong><small>Dados cadastrais não são enviados à IA</small></span></div>
-              <div class="trust-item"><span class="icon-circle">⌁</span><span><strong>Orientação pelo SUS</strong><small>Encontre a unidade indicada</small></span></div>
-            </div>
-            <div class="important-note">
-              <span>i</span>
-              <p><strong>Importante</strong>Este atendimento orienta, mas não substitui o exame presencial com um cirurgião-dentista.</p>
-            </div>
-            <div class="guideline-link">Referências clínicas: <a href="https://bvsms.saude.gov.br/bvs/publicacoes/diretriz_pratica_odontologica_aps_cancer.pdf" target="_blank" rel="noreferrer">diretriz do Ministério da Saúde sobre câncer de boca <span aria-hidden="true">↗</span></a> e <cite>Diagnóstico diferencial de lesões bucais na clínica odontológica</cite> (Bonan, Perez e Mélo, 2014).</div>
-          </section>
+      <section class="hero" id="atendimento">
+        <div class="hero-grid">
+          <header class="hero-copy">
+            <p class="hero-eyebrow">Orientação em saúde bucal na Atenção Primária do SUS</p>
+            <h1>Vamos cuidar da sua boca</h1>
+            <p class="hero-tagline">Conte o que está acontecendo. Em poucos minutos você entende a prioridade e sabe onde buscar cuidado em São José dos Campos.</p>
+          </header>
 
-          <section class="conversation-card" aria-live="polite">
-            <div id="intakeScreen" class="card-screen active">
-              <div class="card-heading">
-                <span class="assistant-avatar"><img src="assets/dr-estomato-profissional.png" alt="" /><span class="online-dot"></span></span>
-                <div><h2>Antes de começarmos</h2><p>Preencha seus dados para personalizar o cuidado.</p></div>
-              </div>
-              <form id="intakeForm">
-                <label>Como podemos chamar você?<input name="name" autocomplete="name" placeholder="Seu primeiro nome" required /></label>
-                <div class="form-row">
-                  <label>Idade<input name="age" inputmode="numeric" type="number" min="0" max="120" placeholder="Ex.: 42" required /></label>
-                  <label>Sexo<select name="sex" required><option value="">Selecione</option><option>Feminino</option><option>Masculino</option><option>Intersexo</option><option>Prefiro não informar</option></select></label>
-                </div>
-                <label>Telefone<input name="phone" inputmode="tel" autocomplete="tel" placeholder="(12) 99999-9999" required /></label>
-                <label>Rua ou avenida<input name="street" autocomplete="address-line1" placeholder="Ex.: Avenida Andrômeda" required /></label>
-                <div class="form-row address-row">
-                  <label>Número<input name="number" inputmode="numeric" placeholder="Ex.: 1960" required /></label>
-                  <label>Apto. / Complemento<input name="apartment" autocomplete="address-line2" placeholder="Opcional" /></label>
-                </div>
-                <div class="form-row">
-                  <label>Bairro<input name="neighborhood" placeholder="Seu bairro" required /></label>
-                  <label>Cidade<input name="city" autocomplete="address-level2" value="São José dos Campos" required /></label>
-                </div>
-                <button id="geoBtn" class="geo-btn" type="button">⌖ Usar minha localização atual</button>
-                <label class="consent"><input name="consent" type="checkbox" required /><span>Autorizo o uso destes dados para a triagem e o acompanhamento. Entendo que apenas o texto ou áudio necessário da conversa poderá ser processado pelo reconhecimento de voz do navegador e pelo serviço de IA Gemini/Google; meus dados cadastrais não serão enviados à IA.</span></label>
-                <button class="primary-btn" type="submit">Começar atendimento <span>→</span></button>
-              </form>
+          <div class="hero-form">
+        <div class="conversation-card" aria-live="polite">
+          <div id="intakeScreen" class="card-screen active">
+            <div class="card-heading">
+              <span class="assistant-avatar"><img src="assets/dr-estomato-profissional.png" alt="" /></span>
+              <h2>Começar a triagem</h2>
+              <p>Preencha seus dados para personalizar o cuidado.</p>
             </div>
+            <form id="intakeForm">
+              <label>Como podemos chamar você?<input name="name" autocomplete="name" placeholder="Seu primeiro nome" required /></label>
+              <div class="form-row">
+                <label>Idade<input name="age" inputmode="numeric" type="number" min="0" max="120" placeholder="Ex.: 42" required /></label>
+                <label>Sexo<select name="sex" required><option value="">Selecione</option><option>Feminino</option><option>Masculino</option><option>Intersexo</option><option>Prefiro não informar</option></select></label>
+              </div>
+              <label>Telefone<input name="phone" inputmode="tel" autocomplete="tel" placeholder="(12) 99999-9999" maxlength="15" required /><small class="field-note" id="phoneNote">Com DDD. Celular com 9 dígitos ou fixo com 8.</small></label>
+              <label>CEP<input name="cep" inputmode="numeric" autocomplete="postal-code" placeholder="12246-000" maxlength="9" required /><small class="field-note" id="cepNote">Informe o CEP para preencher o endereço automaticamente.</small></label>
+              <label>Rua ou avenida<input name="street" autocomplete="address-line1" placeholder="Ex.: Avenida Andrômeda" required /></label>
+              <div class="form-row">
+                <label>Número<input name="number" inputmode="numeric" placeholder="Ex.: 1960" required /></label>
+                <label>Apto. / Complemento<input name="apartment" autocomplete="address-line2" placeholder="Opcional" /></label>
+              </div>
+              <label>Bairro<input name="neighborhood" placeholder="Seu bairro" required /></label>
+              <div class="form-row city-row">
+                <label>Cidade<input name="city" autocomplete="address-level2" value="São José dos Campos" required /></label>
+                <label>UF<input name="uf" autocomplete="address-level1" value="SP" maxlength="2" required /></label>
+              </div>
+              <p class="field-note area-note" id="areaNote">Atendimento para São José dos Campos e municípios vizinhos.</p>
+              <button id="geoBtn" class="geo-btn" type="button">Usar minha localização atual</button>
+              <label class="consent"><input name="consent" type="checkbox" required /><span>Autorizo o uso destes dados para a triagem e o acompanhamento. Entendo que apenas o texto ou áudio necessário da conversa poderá ser processado pelo reconhecimento de voz do navegador e pelo serviço de IA Gemini/Google; meus dados cadastrais não serão enviados à IA.</span></label>
+              <button class="primary-btn" type="submit">Começar atendimento</button>
+            </form>
+          </div>
 
-            <div id="chatScreen" class="card-screen chat-screen">
-              <div class="chat-header">
-                <button id="backToIntake" class="icon-btn" aria-label="Voltar">←</button>
-                <span class="assistant-avatar small"><img src="assets/dr-estomato-profissional.png" alt="" /><span class="online-dot"></span></span>
-                <div><strong>Dr. Estomato</strong><small><span></span> Assistente virtual disponível</small></div>
-                <button id="soundToggle" class="icon-btn sound-on" aria-label="Ativar ou desativar áudio">◖))</button>
-              </div>
-              <div id="chatMessages" class="chat-messages"></div>
-              <div id="quickReplies" class="quick-replies"></div>
-              <div id="recordingPanel" class="recording-panel" hidden>
-                <div class="recording-status"><span class="record-dot"></span><strong id="recordingLabel">Áudio gravado</strong><time id="recordingTime">00:00</time></div>
-                <audio id="recordingPreview" controls></audio>
-                <div class="recording-actions"><button id="discardRecording" type="button">Descartar</button><button id="sendRecording" type="button">Enviar áudio ➤</button></div>
-              </div>
-              <form id="chatForm" class="chat-input">
-                <button id="voiceBtn" type="button" class="voice-btn" aria-label="Falar resposta">●</button>
-                <input id="messageInput" autocomplete="off" placeholder="Digite ou grave uma mensagem…" />
-                <button type="submit" class="send-btn" aria-label="Enviar mensagem">➤</button>
-              </form>
+          <div id="chatScreen" class="card-screen chat-screen">
+            <div class="chat-header">
+              <button id="backToIntake" class="icon-btn" aria-label="Voltar">←</button>
+              <span class="assistant-avatar small"><img src="assets/dr-estomato-profissional.png" alt="" /></span>
+              <div><strong>Dr. Estomato</strong><small>Assistente virtual disponível</small></div>
+              <button id="soundToggle" class="voice-toggle sound-on" type="button" aria-pressed="true"><span class="voice-toggle-icon" aria-hidden="true">◖))</span><span id="soundToggleLabel">Desativar voz</span></button>
             </div>
+            <div id="chatMessages" class="chat-messages"></div>
+            <div id="quickReplies" class="quick-replies"></div>
+            <div id="recordingPanel" class="recording-panel" hidden>
+              <div class="recording-status"><span class="record-dot"></span><strong id="recordingLabel">Áudio gravado</strong><time id="recordingTime">00:00</time></div>
+              <audio id="recordingPreview" controls></audio>
+              <div class="recording-actions"><button id="discardRecording" type="button">Descartar</button><button id="sendRecording" type="button">Enviar áudio</button></div>
+            </div>
+            <form id="chatForm" class="chat-input">
+              <button id="voiceBtn" type="button" class="voice-btn" aria-label="Falar resposta">●</button>
+              <input id="messageInput" autocomplete="off" placeholder="Digite ou grave uma mensagem…" />
+              <button type="submit" class="send-btn" aria-label="Enviar mensagem">➤</button>
+            </form>
+          </div>
 
-            <div id="resultScreen" class="card-screen result-screen"></div>
-          </section>
+          <div id="resultScreen" class="card-screen result-screen"></div>
         </div>
 
-        <section class="steps-strip" aria-label="Etapas do atendimento">
-          <article><span>01</span><div><strong>Conte o que sente</strong><p>Uma conversa simples, no seu ritmo.</p></div></article>
-          <article><span>02</span><div><strong>Entenda a prioridade</strong><p>Avaliamos sinais que pedem atenção.</p></div></article>
-          <article><span>03</span><div><strong>Encontre atendimento</strong><p>Veja onde buscar cuidado na rede.</p></div></article>
-        </section>
+            <p class="disclaimer">Este atendimento orienta, mas não substitui o exame presencial com um cirurgião-dentista.</p>
+          </div>
+
+          <aside class="hero-points">
+            <ul class="hero-list">
+              <li><strong>Dados protegidos</strong><span>Informações cadastrais não são enviadas à inteligência artificial.</span></li>
+              <li><strong>Prioridade clínica</strong><span>Classificação conservadora em três níveis, calculada no próprio aparelho.</span></li>
+              <li><strong>Rede pública</strong><span>UBS, UPA e Ambulatório de Estomatologia do ICT/UNESP.</span></li>
+            </ul>
+            <a class="hero-link" href="#como-funciona">Ver como funciona</a>
+          </aside>
+        </div>
       </section>
 
-    </main>
-    <footer>
-      <section class="institutional" aria-label="Instituições parceiras">
-        <div class="institutional-heading"><span>Realização e apoio institucional</span></div>
+      <section id="como-funciona" class="steps-section">
+        <div class="section-head">
+          <h2>Como funciona</h2>
+          <p>Três etapas, sem cadastro prévio e sem fila.</p>
+        </div>
+        <div class="steps-strip">
+          <article><span>01</span><strong>Conte o que sente</strong><p>Uma conversa simples, no seu ritmo, por texto ou por voz.</p></article>
+          <article><span>02</span><strong>Entenda a prioridade</strong><p>Sinais que pedem atenção imediata interrompem o questionário na hora.</p></article>
+          <article><span>03</span><strong>Encontre atendimento</strong><p>Rota até a unidade indicada e acompanhamento com a equipe.</p></article>
+        </div>
+      </section>
+
+      <section id="base-clinica" class="reference-section">
+        <div class="section-head">
+          <h2>Base clínica</h2>
+          <p>A triagem identifica prioridade e orienta a busca de cuidado. Ela não realiza diagnóstico nem indica biópsia.</p>
+        </div>
+        <ul class="reference-list">
+          <li>BRASIL. Ministério da Saúde. <cite>Diretriz para a prática clínica odontológica na Atenção Primária à Saúde: condutas para diagnóstico das desordens orais potencialmente malignas e do câncer de boca</cite>. Brasília, 2023.<br><a href="https://bvsms.saude.gov.br/bvs/publicacoes/diretriz_pratica_odontologica_aps_cancer.pdf" target="_blank" rel="noreferrer">Ler a diretriz ↗</a></li>
+          <li>BONAN, Paulo Rogério Ferreti; PEREZ, Danyel Elias da Cruz; MÉLO, Cláudia Batista. <cite>Diagnóstico diferencial de lesões bucais na clínica odontológica</cite>. João Pessoa, 2014.</li>
+          <li>As unidades exibidas são referências regionais. Confirme a unidade de abrangência e o horário na Central 156 ou no site oficial da Prefeitura antes do deslocamento.</li>
+        </ul>
+      </section>
+
+      <section id="instituicoes" class="institutional">
+        <div class="section-head">
+          <h2>Realização e apoio institucional</h2>
+        </div>
         <div class="institutional-logos">
           <figure><img src="assets/prefeitura-sjc.jpg" alt="Prefeitura de São José dos Campos" /><figcaption>Prefeitura de São José dos Campos</figcaption></figure>
-          <figure><img src="assets/ict-unesp.jpg" alt="Instituto de Ciência e Tecnologia da UNESP, São José dos Campos" /><figcaption>ICT · UNESP</figcaption></figure>
-          <figure><img src="assets/labodigit.jpg" alt="LABODIGIT, Laboratório de Odontologia Digital da UFPB" /><figcaption>LABODIGIT · UFPB</figcaption></figure>
+          <figure><img src="assets/ict-unesp.jpg" alt="Instituto de Ciência e Tecnologia da UNESP, São José dos Campos" /><figcaption>ICT/UNESP</figcaption></figure>
+          <figure><img src="assets/labodigit.jpg" alt="LABODIGIT, Laboratório de Odontologia Digital da UFPB" /><figcaption>LABODIGIT/UFPB</figcaption></figure>
         </div>
       </section>
-      <div class="footer-bottom"><span>Dr. Estomato · Projeto de apoio à triagem, não realiza diagnóstico.</span><span class="footer-links"><span>Bonan, Perez e Mélo · 2014</span><a href="https://bvsms.saude.gov.br/bvs/publicacoes/diretriz_pratica_odontologica_aps_cancer.pdf" target="_blank" rel="noreferrer">Diretriz clínica do Ministério da Saúde ↗</a><a href="https://www.sjc.sp.gov.br/servicos/saude/unidades-basicas-de-saude-ubs/unidades-basicas-de-saude/" target="_blank" rel="noreferrer">Rede de saúde de SJC ↗</a></span></div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-grid">
+        <div>
+          <h3>Atendimento</h3>
+          <ul>
+            <li><a href="#atendimento">Iniciar triagem</a></li>
+            <li><a href="#como-funciona">Como funciona</a></li>
+            <li><a href="tel:156">Central 156</a></li>
+            <li><a href="tel:192">SAMU 192</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Rede de saúde</h3>
+          <ul>
+            <li><a href="https://www.sjc.sp.gov.br/servicos/saude/unidades-basicas-de-saude-ubs/unidades-basicas-de-saude/" target="_blank" rel="noreferrer">Unidades básicas de saúde ↗</a></li>
+            <li><a href="https://www.google.com/maps/search/?api=1&query=UPA+24+horas+S%C3%A3o+Jos%C3%A9+dos+Campos" target="_blank" rel="noreferrer">UPAs 24 horas ↗</a></li>
+            <li><a href="https://www.google.com/maps/search/?api=1&query=ICT+UNESP+S%C3%A3o+Jos%C3%A9+dos+Campos" target="_blank" rel="noreferrer">Ambulatório de Estomatologia ↗</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Referências</h3>
+          <ul>
+            <li><a href="https://bvsms.saude.gov.br/bvs/publicacoes/diretriz_pratica_odontologica_aps_cancer.pdf" target="_blank" rel="noreferrer">Diretriz do Ministério da Saúde ↗</a></li>
+            <li><a href="#base-clinica">Bonan, Perez e Mélo, 2014</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Equipe</h3>
+          <ul>
+            <li><a href="admin.html">Área do navegador</a></li>
+            <li><a href="#instituicoes">Instituições parceiras</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-fine">
+        <p>Dr. Estomato. Projeto de apoio à triagem em saúde bucal, não realiza diagnóstico.</p>
+        <p>ICT/UNESP, LABODIGIT/UFPB e Prefeitura de São José dos Campos</p>
+      </div>
     </footer>
   </div>
   <div id="toast" class="toast" role="status"></div>
-  <script src="app.js?v=20260827-5"></script>
+  <script src="app.js?v=20260917-5"></script>
 </body>
 </html>

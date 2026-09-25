@@ -3,50 +3,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#f7f3eb" />
-  <title>Navegador · Dr. Estomato</title>
+  <meta name="theme-color" content="#f5f5f7" />
+  <title>Navegador do Dr. Estomato</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260827-3" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260917-5" />
 </head>
 <body class="admin-page">
-  <header class="topbar">
-    <a class="brand" href="index.html" aria-label="Voltar ao Dr. Estomato"><span class="brand-mark"><img src="assets/dr-estomato.jpeg" alt="Dr. Estomato" /></span></a>
-    <nav class="view-switch" aria-label="Área do aplicativo"><a class="view-btn" href="index.html">Cidadão</a><span class="view-btn active">Navegador</span></nav>
-    <div class="sus-badge"><span>●</span> Rede SUS · SJC</div>
+  <header class="global-nav">
+    <div class="global-nav-inner">
+      <a class="global-brand" href="index.html"><img src="assets/dr-estomato.jpeg" alt="" /><span>Dr. Estomato</span></a>
+      <nav class="global-links" aria-label="Seções do site">
+        <a href="index.html">Atendimento do cidadão</a>
+        <a href="index.html#como-funciona">Como funciona</a>
+        <a href="index.html#base-clinica">Base clínica</a>
+      </nav>
+      <span class="global-meta">Rede SUS de São José dos Campos</span>
+    </div>
   </header>
+
+  <div class="mini-nav">
+    <div class="mini-nav-inner">
+      <span class="mini-nav-title">Dr. Estomato <em>navegador</em></span>
+      <nav class="mini-nav-links" aria-label="Ações do painel">
+        <a href="index.html">Voltar ao atendimento</a>
+        <a href="tel:156">Central 156</a>
+      </nav>
+    </div>
+  </div>
 
   <main>
     <section id="adminLogin" class="admin-login-page">
       <div class="login-card">
         <div class="login-heading">
           <span class="login-shield" aria-hidden="true">⌾</span>
-          <div><span class="eyebrow"><span></span> Acesso restrito</span><h2>Painel do navegador</h2></div>
+          <span class="eyebrow">Acesso restrito</span>
+          <h2>Painel do navegador</h2>
         </div>
         <p class="login-intro">Entre com as credenciais da equipe responsável pelo acompanhamento.</p>
         <form id="loginForm">
           <label><span>Login</span><input id="loginUser" autocomplete="username" placeholder="Digite seu login" required /></label>
           <label><span>Senha</span><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Digite sua senha" required /></label>
           <p id="loginError" class="login-error" role="alert"></p>
-          <button class="primary-btn" type="submit">Entrar no painel <span>→</span></button>
+          <button class="primary-btn" type="submit">Entrar no painel</button>
         </form>
-        <small class="login-footnote"><span>●</span> Área destinada somente à equipe autorizada.</small>
+        <small class="login-footnote">Área destinada somente à equipe autorizada.</small>
       </div>
     </section>
 
     <section id="adminDashboard" class="navigator-view" hidden>
-      <div class="dashboard-head"><div><span class="eyebrow"><span></span> Administração e acompanhamento</span><h1>Painel do navegador</h1><p>Acompanhe acolhimentos e ajude a reduzir barreiras de acesso.</p></div><div class="dashboard-actions"><button id="exportBtn" class="secondary-btn">↓ Exportar histórico</button><button id="logoutBtn" class="logout-btn">Sair ↗</button></div></div>
+      <div class="dashboard-head">
+        <div>
+          <span class="eyebrow">Administração e acompanhamento</span>
+          <h1>Painel do navegador</h1>
+          <p>Acompanhe acolhimentos e ajude a reduzir barreiras de acesso.</p>
+        </div>
+        <div class="dashboard-actions">
+          <button id="exportBtn" class="secondary-btn">Exportar histórico</button>
+          <button id="logoutBtn" class="logout-btn">Sair</button>
+        </div>
+      </div>
+
       <div class="stats-grid">
         <article><span class="stat-icon neutral">◎</span><div><small>ACOLHIMENTOS</small><strong id="totalCases">0</strong><p>registrados no servidor</p></div></article>
         <article><span class="stat-icon red">!</span><div><small>URGENTES</small><strong id="redCases">0</strong><p>precisam de confirmação</p></div></article>
         <article><span class="stat-icon yellow">◷</span><div><small>EM ACOMPANHAMENTO</small><strong id="followupCases">0</strong><p>com retorno pendente</p></div></article>
         <article><span class="stat-icon green">✓</span><div><small>ASSISTÊNCIA ACESSADA</small><strong id="resolvedCases">0</strong><p>confirmados pelo paciente</p></div></article>
       </div>
-      <div class="dashboard-grid"><section class="case-list-panel"><div class="panel-title"><div><h2>Pessoas acompanhadas</h2><p>Histórico clínico resumido</p></div><input id="caseSearch" placeholder="⌕  Buscar pessoa…" /></div><div class="filter-row"><button class="filter active" data-filter="all">Todos</button><button class="filter" data-filter="red">Urgentes</button><button class="filter" data-filter="yellow">Prioritários</button><button class="filter" data-filter="green">Rotina</button></div><div id="caseList" class="case-list"></div></section><aside id="caseDetail" class="case-detail empty"><div><span class="empty-icon">☷</span><h3>Selecione um atendimento</h3><p>Os dados clínicos e a conversa aparecerão aqui.</p></div></aside></div>
+
+      <div class="dashboard-grid">
+        <section class="case-list-panel">
+          <div class="panel-title">
+            <div><h2>Pessoas acompanhadas</h2><p>Histórico clínico resumido</p></div>
+            <input id="caseSearch" placeholder="Buscar pessoa…" />
+          </div>
+          <div class="filter-row">
+            <button class="filter active" data-filter="all">Todos</button>
+            <button class="filter" data-filter="red">Urgentes</button>
+            <button class="filter" data-filter="yellow">Prioritários</button>
+            <button class="filter" data-filter="green">Rotina</button>
+          </div>
+          <div id="caseList" class="case-list"></div>
+        </section>
+        <aside id="caseDetail" class="case-detail empty">
+          <div><span class="empty-icon">☷</span><h3>Selecione um atendimento</h3><p>Os dados clínicos e a conversa aparecerão aqui.</p></div>
+        </aside>
+      </div>
     </section>
   </main>
   <div id="toast" class="toast" role="status"></div>
-  <script src="admin.js?v=20260825-9"></script>
+  <script src="admin.js?v=20260917-1"></script>
 </body>
 </html>

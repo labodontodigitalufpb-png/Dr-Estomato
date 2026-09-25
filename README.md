@@ -22,20 +22,39 @@ unset GEMINI_API_KEY
 python3 server.py
 ```
 
+## Área de atendimento
+
+O Dr. Estomato é específico para **São José dos Campos (SP)**. O cadastro aceita a cidade principal e os municípios limítrofes — Jacareí, Caçapava, Igaratá, Jambeiro, Monteiro Lobato, Paraibuna e Santa Branca — e recusa, com mensagem explícita, endereços fora dessa região. A regra vive em `SERVICE_AREA` no `server.py` e é aplicada no CEP, no envio do formulário, no `PATCH` do navegador e na busca de unidades.
+
+## Google Maps
+
+O mapa e a busca de unidades usam o Google Maps. Sem chave configurada, o app continua funcionando e exibe a lista com link externo para o Google Maps.
+
+```bash
+GOOGLE_MAPS_API_KEY="chave-do-servidor" python3 server.py
+```
+
+A chave do servidor (Places API New, Routes API e Geocoding) nunca chega ao navegador. O mapa embutido precisa de uma chave de navegador, que pode ser a mesma ou uma separada em `GOOGLE_MAPS_BROWSER_KEY` — restrinja-a por referenciador HTTP no console do Google. Ambas também podem ficar no Keychain, nos itens `dr-estomato-google-maps` e `dr-estomato-google-maps-browser`.
+
 ## Incluído no protótipo
 
 - mini-inquérito com consentimento;
-- endereço estruturado com rua, número, apartamento/complemento, bairro e cidade;
+- CEP com preenchimento automático de rua, bairro, cidade e UF pelo ViaCEP, com validação da área de atendimento;
+- endereço estruturado com rua, número, apartamento/complemento, bairro, cidade e UF;
+- telefone brasileiro com máscara, limite de dígitos, validação de DDD e aceitação de 8 ou 9 dígitos, no navegador e no servidor;
 - triagem conversacional com respostas em voz e entrada por voz quando suportada;
 - perguntas clínicas imediatas no navegador, sem aguardar uma chamada de IA a cada etapa;
 - minimização de dados: informações cadastrais não são enviadas ao Gemini;
 - transcrição de áudio e leitura da orientação final pela Gemini Interactions API;
 - leitura imediata das perguntas pela voz instalada no sistema e voz natural do Gemini na orientação final, ambas com fallback local;
 - resposta direta por voz, com reconhecimento e envio automáticos; em navegadores sem ditado nativo, gravação temporária de até 45 segundos e transcrição automática sem etapa de prévia;
+- controle explícito para desativar e reativar a voz do assistente, com preferência guardada no aparelho;
+- relatório completo da avaliação em PDF, com cadastro, perguntas e respostas, classificação, possibilidades, encaminhamentos e conversa;
+- busca de atendimento com mapa embutido, unidades reais do Google Places e tempo de deslocamento calculado pela Routes API;
 - classificação local conservadora em vermelho, amarelo ou verde;
 - identificação explícita de alterações que exigem avaliação presencial, como ferida ou úlcera, manchas brancas ou vermelhas e caroço ou endurecimento;
 - interrupção imediata do questionário diante de sinais graves;
-- busca da UBS ou UPA mais próxima a partir do endereço ou localização compartilhada, rota no Google Maps e Central 156;
+- unidades ordenadas por tempo real de rota a partir do endereço já informado, com rota, telefone e Central 156;
 - opção de avaliação prioritária no Ambulatório de Estomatologia (CEDOB) do ICT/UNESP, com rota e telefone para confirmação;
 - histórico clínico objetivo;
 - chat bidirecional persistente entre o cidadão e o navegador, vinculado ao atendimento por token privado;
